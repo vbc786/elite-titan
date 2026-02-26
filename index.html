@@ -2,316 +2,249 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VBC TITAN | THE OMNI ARCHIVE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VBC TITAN | Neural Phoenix</title>
     
-    <meta name="description" content="VBC TITAN: Proprietary Neural Creative Monolith. Enterprise AI Architecture.">
-    <meta property="og:title" content="VBC TITAN | Neural Monolith">
-    <meta name="theme-color" content="#050505">
-
+    <link rel="shortcut icon" type="image/x-icon" href="./favicon.ico">
+    <link rel="icon" type="image/png" href="./logo.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/bundle.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@100;400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
     
     <style>
-        :root { --gold: #D4AF37; --matte: #050505; }
-        body { background: var(--matte); color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; margin: 0; }
-        .font-titan { font-family: 'Syncopate', sans-serif; letter-spacing: 0.5em; text-transform: uppercase; }
-        .gold-text { background: linear-gradient(to right, #D4AF37, #FFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        /* LAYOUT ARCHITECTURE */
-        .omni-container { display: grid; grid-template-columns: 400px 1fr; height: 100vh; overflow: hidden; }
+        :root { --pr-blue: #410CD9; --sidebar-w: 300px; }
+        body { background: #000; color: #1d1d1f; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
         
-        /* SIDEBAR & GOLD SCROLLBAR */
-        .sidebar { background: #000; border-right: 1px solid #111; display: flex; flex-direction: column; height: 100vh; padding-top: 100px; position: relative; z-index: 50; }
-        .tool-scroll-area { flex: 1; overflow-y: auto; padding: 0 40px 100px; scrollbar-width: thin; scrollbar-color: var(--gold) transparent; }
-        .tool-scroll-area::-webkit-scrollbar { width: 4px; }
-        .tool-scroll-area::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #111, var(--gold), #111); border-radius: 10px; }
+        /* THREE.JS BACKGROUND */
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
-        .cat-label { font-size: 8px; font-weight: 900; color: #333; letter-spacing: 4px; display: block; margin: 35px 0 12px; border-bottom: 1px solid #111; padding-bottom: 5px; text-transform: uppercase; }
-        .tool-link { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 0; font-size: 10px; color: #666; transition: 0.3s; border-bottom: 1px solid transparent; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
-        .tool-link:hover { color: var(--gold); padding-left: 8px; border-bottom-color: #111; }
-        .tool-link span { opacity: 0.3; font-size: 14px; }
-        .sidebar-footer { padding: 25px 40px; border-top: 1px solid #111; background: #000; z-index: 60; box-shadow: 0 -20px 40px rgba(0,0,0,1); }
+        /* GLASSMORPHISM UI */
+        .app-grid { position: relative; display: grid; grid-template-columns: var(--sidebar-w) 1fr 280px; height: 100vh; padding-top: 80px; z-index: 10; }
+        .sidebar, .inspector { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(15px); border-right: 1px solid #e5e5e5; overflow-y: auto; padding: 25px; }
+        .inspector { border-left: 1px solid #e5e5e5; border-right: none; }
+        .stage { display: flex; align-items: center; justify-content: center; position: relative; overflow: auto; background: transparent; }
 
-        /* MAIN STAGE & BREADCRUMBS */
-        .stage { background: radial-gradient(circle at center, #111 0%, #000 100%); display: flex; align-items: center; justify-content: center; position: relative; padding: 40px; overflow: hidden; }
-        .breadcrumb-container { position: absolute; top: 30px; left: 40px; display: flex; align-items: center; gap: 12px; z-index: 100; pointer-events: none; }
-        .bc-node { font-family: 'Syncopate', sans-serif; font-size: 7px; font-weight: 700; color: #222; text-transform: uppercase; transition: 0.5s; }
-        .bc-node.active { color: var(--gold); }
-        .bc-sep { width: 10px; height: 1px; background: #111; }
+        /* BUTTONS & INPUTS */
+        .vbc-main-btn { background: var(--pr-blue); color: white; padding: 14px 32px; border-radius: 99px; font-weight: 700; cursor: pointer; transition: 0.3s; border: none; box-shadow: 0 10px 20px rgba(65,12,217,0.25); }
+        .vbc-main-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(65,12,217,0.4); }
+        .tool-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; font-size: 13px; font-weight: 500; color: #444; border-radius: 14px; transition: 0.2s; cursor: pointer; margin-bottom: 6px; }
+        .tool-btn:hover { background: #f0f0ff; color: var(--pr-blue); }
 
-        #mainCanvas { max-width: 100%; max-height: 80vh; box-shadow: 0 60px 100px rgba(0,0,0,0.9); touch-action: none; transition: filter 0.5s ease; cursor: crosshair; }
+        /* CANVAS */
+        canvas#mainCanvas { background: white; box-shadow: 0 40px 100px rgba(0,0,0,0.3); max-width: 90%; max-height: 75vh; border-radius: 12px; }
+        
+        /* OVERLAYS */
+        .gate-overlay { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #loader { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; background: white; padding: 30px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center; }
 
-        /* SYSTEM COMPONENTS */
-        .vbc-buy { background: var(--gold); color: #000; padding: 12px 25px; font-size: 9px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; transition: 0.3s; }
-        .loader-wrap { position: absolute; inset: 0; background: #000; z-index: 500; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: 0.5s; }
-        .loader-wrap.active { display: flex; opacity: 1; }
-        .gold-line { width: 100px; height: 1px; background: #111; position: relative; overflow: hidden; }
-        .gold-line::after { content: ''; position: absolute; left: -100%; width: 100%; height: 100%; background: var(--gold); animation: load 1.5s infinite; }
-        @keyframes load { to { left: 100%; } }
-
-        /* OVERLAYS (LOCK, TOS, ADMIN, MODAL) */
-        .system-overlay { position: fixed; inset: 0; background: #000; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #adminDash { background: rgba(0,0,0,0.98); backdrop-blur: 20px; z-index: 20000; padding: 60px; text-align: left; align-items: stretch; justify-content: flex-start; }
-
-        @media (max-width: 1100px) { 
-            .omni-container { grid-template-columns: 1fr; overflow-y: auto; height: auto; }
-            .sidebar { height: auto; padding-top: 100px; }
-            .stage { height: 60vh; }
-        }
+        /* BRANDING */
+        .brand-logo-big { height: 50px; width: auto; }
+        .lock-logo { height: 140px; width: auto; margin-bottom: 40px; }
     </style>
 </head>
 <body>
 
-<nav class="fixed top-0 w-full z-[1000] p-6 flex justify-between items-center bg-black/80 backdrop-blur-xl border-b border-white/5">
-    <h1 class="font-titan text-[10px] gold-text">VBC TITAN</h1>
-    <button onclick="window.location.href='https://wa.me/923217452433'" class="vbc-buy font-titan">Inquire License</button>
+<canvas id="bg-canvas"></canvas>
+
+<nav class="fixed top-0 w-full h-20 bg-white/95 backdrop-blur-md border-b flex items-center justify-between px-10 z-[1000]">
+    <div class="flex items-center gap-6">
+        <img src="logo.png" class="brand-logo-big" alt="VBC Logo">
+        <div class="h-10 w-[1px] bg-gray-200"></div>
+        <span class="font-black text-xl tracking-tighter uppercase">Titan <span class="text-indigo-600">Phoenix</span></span>
+    </div>
+    <div class="flex gap-4">
+        <button onclick="downAsset()" class="vbc-main-btn text-sm">Download Render</button>
+    </div>
 </nav>
 
-<div class="omni-container">
+<div id="mainApp" class="app-grid" style="display:none;">
     <aside class="sidebar">
-        <div class="tool-scroll-area">
-            <div class="mb-8 text-zinc-800 text-[7px] font-bold tracking-[0.4em]">SYSTEM v3.5 // VIRTUAL BRIDGE CONNECT</div>
-            
-            <span class="cat-label">Generative Core</span>
-            <div class="tool-link" onclick="neuralSim('AI Image Gen', 'Generative')">Create Any Image <span>🎨</span></div>
-            <div class="tool-link" onclick="neuralSim('Edit with AI', 'Generative')">Edit with AI <span>🪄</span></div>
-            <div class="tool-link" onclick="neuralSim('AI Backgrounds', 'Generative')">AI Backgrounds <span>🌅</span></div>
-            <div class="tool-link" onclick="neuralSim('Video Generator', 'Generative')">Video Generator <span>🎬</span></div>
-            <div class="tool-link" onclick="neuralSim('Virtual Model', 'Generative')">Virtual Model <span>👤</span></div>
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Neural Core</p>
+        <button class="tool-btn" onclick="runBgRemove()"><span>✂️</span> Background Removal</button>
+        <button class="tool-btn" onclick="applyShadow()"><span>🌓</span> AI Realistic Shadows</button>
+        <button class="tool-btn" onclick="applyFX('beauty')"><span>💎</span> Product Beautifier</button>
+        <button class="tool-btn" onclick="applyFX('iron')"><span>💨</span> AI Fabric Ironing</button>
+        <button class="tool-btn" onclick="applyFX('ghost')"><span>👤</span> Ghost Mannequin</button>
+        
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-10 mb-6">Generative</p>
+        <button class="tool-btn" onclick="generateFreeAI('Image')"><span>🎨</span> Text-to-Image</button>
+        <button class="tool-btn" onclick="generateFreeAI('Background')"><span>🌆</span> AI Backgrounds</button>
+        <button class="tool-btn" onclick="alert('Feature Ready for API Integration')"><span>🎬</span> Video Generator</button>
 
-            <span class="cat-label">Neural Fashion</span>
-            <div class="tool-link" onclick="runBgRemove(); updBC('Fashion', 'BG Removal')">Background Removal <span>✨</span></div>
-            <div class="tool-link" onclick="toggleEraser(); updBC('Fashion', 'Retouch')" id="eBtn">Retouch / AI Fill <span>🧽</span></div>
-            <div class="tool-link" onclick="runFX('iron'); updBC('Fashion', 'Ironing')">AI Ironing <span>💨</span></div>
-            <div class="tool-link" onclick="runFX('recolor'); updBC('Fashion', 'Recolor')">AI Recolor <span>🌈</span></div>
-            <div class="tool-link" onclick="runFX('ghost'); updBC('Fashion', 'Ghost')">Ghost Mannequin <span>👻</span></div>
-            <div class="tool-link" onclick="neuralSim('Flat Lay Creator', 'Fashion')">Flat Lay <span>👕</span></div>
-
-            <span class="cat-label">Commercial Staging</span>
-            <div class="tool-link" onclick="runFX('beauty'); updBC('Staging', 'Beautifier')">Product Beautifier <span>💎</span></div>
-            <div class="tool-link" onclick="applyShadow(); updBC('Staging', 'Shadows')">AI Shadows <span>🌓</span></div>
-            <div class="tool-link" onclick="neuralSim('AI Expansion', 'Staging')">AI Expand / Resize <span>↔️</span></div>
-            <div class="tool-link" onclick="neuralSim('Product Staging', 'Staging')">Product Staging <span>🏺</span></div>
-            <div class="tool-link" onclick="neuralSim('AI Upscale', 'Staging')">Upscale 4K <span>🚀</span></div>
-
-            <span class="cat-label">Editing & Layout</span>
-            <div class="tool-link" onclick="neuralSim('Object Layers', 'Design')">Object Layers <span>📑</span></div>
-            <div class="tool-link" onclick="neuralSim('Cropping', 'Design')">Crop & Resize <span>📐</span></div>
-            <div class="tool-link" onclick="neuralSim('Visual Properties', 'Design')">Visual Adjustments <span>🔅</span></div>
-            <div class="tool-link" onclick="neuralSim('Filters', 'Design')">Filters & Blur <span>🎭</span></div>
-
-            <span class="cat-label">Brand Kit Engine</span>
-            <div class="tool-link" onclick="document.getElementById('logoUp').click()">Upload Logo <span>🛡️</span></div>
-            <input type="file" id="logoUp" hidden accept="image/*">
-            <div class="tool-link" onclick="applyLogo(); updBC('Identity', 'Branding')">Apply Watermark <span>✍️</span></div>
-            <div class="tool-link" onclick="neuralSim('Brand Kit', 'Identity')">Custom Templates <span>🖼️</span></div>
-
-            <span class="cat-label">Management</span>
-            <div class="tool-link" onclick="neuralSim('Batch Processor', 'Workflow')">Batch Export <span>📦</span></div>
-            <div class="tool-link" onclick="neuralSim('Folders', 'Workflow')">Folders / Sharing <span>📂</span></div>
-        </div>
-
-        <div class="sidebar-footer">
-            <div class="tool-link" onclick="downAsset()" style="color:var(--gold); font-weight: 900;">Export 4K Render <span>💾</span></div>
-            <div class="mt-4 text-[6px] font-titan text-zinc-800">Sovereign Encryption Active</div>
-        </div>
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-10 mb-6">Design Tools</p>
+        <button class="tool-btn" onclick="addText()"><span>✍️</span> Add Neural Text</button>
+        <button class="tool-btn" onclick="document.getElementById('brandUp').click()"><span>📁</span> Brand Kit / Logo</button>
+        <input type="file" id="brandUp" hidden onchange="loadBrandLogo(event)">
+        <button class="tool-btn" onclick="applyWatermark()"><span>🛡️</span> Apply Branding</button>
     </aside>
 
     <main class="stage">
-        <div class="breadcrumb-container">
-            <span class="bc-node active">Titan_Archive</span>
-            <div class="bc-sep"></div>
-            <span class="bc-node" id="bc-cat">Standby</span>
-            <div class="bc-sep"></div>
-            <span class="bc-node" id="bc-tool">Ready</span>
+        <div id="loader">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p class="text-xs font-black text-gray-800 uppercase tracking-widest">Neural Processing</p>
         </div>
 
-        <div id="loader" class="loader-wrap">
-            <div class="gold-line mb-4"></div>
-            <p id="lMsg" class="font-titan text-[7px] text-zinc-600">Processing Neural Node</p>
+        <div id="dropzone" class="text-center p-24 border-2 border-dashed border-gray-300 rounded-[60px] bg-white/90 backdrop-blur-md shadow-2xl">
+            <img src="logo.png" class="h-24 mx-auto mb-10 opacity-30">
+            <h3 class="text-3xl font-black mb-4">Neural Editor Ready</h3>
+            <p class="text-gray-400 mb-10">Select a product photo to begin AI enhancement</p>
+            <button onclick="document.getElementById('mainUp').click()" class="vbc-main-btn px-16">Upload Photo</button>
+            <input type="file" id="mainUp" hidden onchange="handleMainUpload(event)">
         </div>
-
-        <div id="init" class="text-center">
-            <input type="file" id="up" hidden accept="image/*">
-            <button onclick="document.getElementById('up').click()" class="border border-zinc-800 text-zinc-600 px-12 py-5 font-titan text-[8px] hover:text-white hover:border-white transition-all">Import Raw Archive</button>
-        </div>
-
-        <div id="canvas-wrap" class="hidden">
-            <canvas id="mainCanvas"></canvas>
-        </div>
+        <div id="canvasWrap" class="hidden"><canvas id="mainCanvas"></canvas></div>
     </main>
-</div>
 
-<div id="licenseGate" class="system-overlay" style="display:flex;">
-    <div class="w-[1px] h-20 bg-yellow-600 mb-10 animate-pulse"></div>
-    <h2 class="font-titan text-xl gold-text mb-2">System Locked</h2>
-    <input type="text" id="keyIn" placeholder="ENTER LICENSE KEY" class="bg-transparent border-b border-zinc-900 text-white font-titan text-center py-4 mb-10 w-80 outline-none focus:border-yellow-600 transition-all text-sm">
-    <button onclick="verifyKey()" class="vbc-buy font-titan">Initialize Studio</button>
-</div>
-
-<div id="tosOverlay" class="system-overlay">
-    <div class="max-w-xl border border-zinc-900 bg-black p-10">
-        <h2 class="font-titan text-[10px] gold-text mb-6">User Protocols</h2>
-        <div class="h-48 overflow-y-auto text-[8px] text-zinc-600 text-left leading-loose mb-8 pr-4">
-            [ 01 ] PROPRIETARY ARCHITECTURE: VBC TITAN IS PROTECTED PROPERTY.<br>
-            [ 02 ] DATA SOVEREIGNTY: ALL ASSETS ARE PROCESSED LOCALLY.<br>
-            [ 03 ] USAGE: LICENSE IS VALID FOR ENTERPRISE COMMERCIAL USE.<br>
-            [ 04 ] REVERSE ENGINEERING IS STRICTLY PROHIBITED.
+    <aside class="inspector">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10">Fine Tuning</p>
+        <div class="space-y-8">
+            <div>
+                <div class="flex justify-between text-[11px] font-bold mb-3"><span>BRIGHTNESS</span><span id="bV">100</span></div>
+                <input type="range" class="w-full accent-indigo-600" oninput="updateF()" id="br" min="0" max="200" value="100">
+            </div>
+            <div>
+                <div class="flex justify-between text-[11px] font-bold mb-3"><span>CONTRAST</span><span id="cV">100</span></div>
+                <input type="range" class="w-full accent-indigo-600" oninput="updateF()" id="co" min="0" max="200" value="100">
+            </div>
+            <div>
+                <div class="flex justify-between text-[11px] font-bold mb-3"><span>SATURATION</span><span id="sV">100</span></div>
+                <input type="range" class="w-full accent-indigo-600" oninput="updateF()" id="sa" min="0" max="200" value="100">
+            </div>
         </div>
-        <button onclick="acceptTOS()" class="vbc-buy font-titan w-full">Accept Protocols</button>
-    </div>
+
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-16 mb-6">Layers</p>
+        <div id="layerStack" class="space-y-2">
+            <div class="p-4 bg-gray-50 border border-indigo-100 rounded-2xl text-[11px] font-bold flex justify-between">
+                <span>MAIN_ASSET_RAW</span> <span class="text-indigo-600">ACTIVE</span>
+            </div>
+        </div>
+    </aside>
 </div>
 
-<div id="adminDash" class="system-overlay">
-    <div class="flex justify-between items-center border-b border-zinc-900 pb-6 mb-10 w-full">
-        <h2 class="font-titan text-xs gold-text">Command Center</h2>
-        <button onclick="toggleAdmin()" class="text-[8px] text-zinc-700 hover:text-white">[ EXIT ]</button>
-    </div>
-    <div class="grid grid-cols-2 gap-4 w-full text-left">
-        <div class="border border-zinc-900 p-6">
-            <p class="text-zinc-700 text-[8px] mb-2 uppercase">Visits</p>
-            <h3 id="stat-v" class="text-2xl font-bold">1</h3>
-        </div>
-        <div class="border border-zinc-900 p-6">
-            <p class="text-zinc-700 text-[8px] mb-2 uppercase">Status</p>
-            <h3 id="stat-a" class="text-2xl font-bold">LOCKED</h3>
-        </div>
-    </div>
-</div>
-
-<div id="modal" class="system-overlay">
-    <h2 class="font-titan text-2xl gold-text mb-6">Restricted</h2>
-    <p class="text-zinc-600 max-w-sm mb-10 text-[9px] uppercase tracking-widest">Access to <span id="mName" class="text-white"></span> requires a $5,000 Key.</p>
-    <button onclick="window.location.href='https://wa.me/923217452433'" class="vbc-buy">Purchase</button>
-    <button onclick="closeMod()" class="mt-12 text-[7px] font-titan text-zinc-800">Close</button>
+<div id="licenseGate" class="gate-overlay">
+    <img src="logo.png" class="lock-logo" alt="VBC Logo">
+    <h2 class="text-4xl font-black mb-2 tracking-tighter">TITAN PHOENIX</h2>
+    <p class="text-gray-400 mb-12 font-medium">Neural Activation System v12.0</p>
+    <input type="text" id="keyIn" placeholder="TITAN-VBC-XXXX" class="w-[400px] p-7 bg-gray-50 border border-gray-100 rounded-[30px] text-center font-bold text-2xl outline-none focus:ring-8 focus:ring-indigo-50 transition-all mb-8 shadow-inner">
+    <button onclick="checkKey()" class="vbc-main-btn w-[400px] py-7 text-2xl shadow-2xl">Initialize Core</button>
+    <p class="mt-12 text-[10px] text-gray-300 tracking-[10px] uppercase">Encrypted Terminal Interface</p>
 </div>
 
 <script>
-    const canvas = document.getElementById('mainCanvas');
-    const ctx = canvas.getContext('2d');
-    let activeImg = null, brandLogo = null, isEraser = false, isDrawing = false;
+    // --- THREE.JS BACKGROUND ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // CORE SYSTEMS: BREADCRUMBS & LOGS
-    function updBC(c, t) { 
-        document.getElementById('bc-cat').innerText = c; document.getElementById('bc-cat').classList.add('active');
-        document.getElementById('bc-tool').innerText = t; document.getElementById('bc-tool').classList.add('active');
+    const particlesGeometry = new THREE.BufferGeometry();
+    const posArray = new Float32Array(2000 * 3);
+    for(let i=0; i<6000; i++) { posArray[i] = (Math.random() - 0.5) * 10; }
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    const material = new THREE.PointsMaterial({ size: 0.005, color: '#410CD9' });
+    const particlesMesh = new THREE.Points(particlesGeometry, material);
+    scene.add(particlesMesh);
+    camera.position.z = 3;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        particlesMesh.rotation.y += 0.0008;
+        particlesMesh.rotation.x += 0.0003;
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    // --- LOGIC ---
+    const canvas = document.getElementById('mainCanvas'), ctx = canvas.getContext('2d');
+    let activeImg = null, brandLogo = null;
+    const MASTER = "TITAN-VBC-7777", TRIAL = "TITAN-VBC-5865";
+
+    function checkKey() {
+        const val = document.getElementById('keyIn').value.trim();
+        if(val === MASTER) { localStorage.setItem('vbc_v12', 'master'); location.reload(); }
+        else if(val === TRIAL) {
+            if(localStorage.getItem('vbc_v12_exp')) return alert("Trial Expired.");
+            localStorage.setItem('vbc_v12', 'trial');
+            if(!localStorage.getItem('vbc_v12_start')) localStorage.setItem('vbc_v12_start', new Date().getTime());
+            location.reload();
+        } else alert("Invalid Key");
     }
 
-    // LICENSE GATE & TOS ENGINE
-    function verifyKey() {
-        const key = document.getElementById('keyIn').value;
-        if(key.startsWith("TITAN-VBC-") && key.length >= 12) {
-            localStorage.setItem('auth_titan', 'true');
-            document.getElementById('licenseGate').style.display = 'none';
-            checkTOS();
-        } else { alert("INVALID_KEY"); }
-    }
-
-    function checkTOS() {
-        if(localStorage.getItem('auth_titan')==='true' && localStorage.getItem('tos_titan')!=='true') {
-            document.getElementById('tosOverlay').style.display = 'flex';
-        }
-    }
-
-    function acceptTOS() {
-        localStorage.setItem('tos_titan', 'true');
-        document.getElementById('tosOverlay').style.display = 'none';
-    }
-
-    // ADMIN DASHBOARD (SHIFT + A)
-    document.addEventListener('keydown', (e) => { if(e.shiftKey && e.key === 'A') toggleAdmin(); });
-    function toggleAdmin() {
-        const d = document.getElementById('adminDash');
-        d.style.display = d.style.display === 'flex' ? 'none' : 'flex';
-        document.getElementById('stat-v').innerText = localStorage.getItem('vbc_v') || 1;
-        document.getElementById('stat-a').innerText = localStorage.getItem('auth_titan')==='true' ? "AUTH" : "VOID";
-    }
-
-    // IMAGE ENGINE
-    document.getElementById('up').onchange = (e) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => {
+    function handleMainUpload(e) {
+        const r = new FileReader(); r.onload = (ev) => {
+            const img = new Image(); img.onload = () => {
                 activeImg = img; canvas.width = img.width; canvas.height = img.height;
-                ctx.drawImage(img, 0, 0); document.getElementById('init').style.display = 'none';
-                document.getElementById('canvas-wrap').classList.remove('hidden');
-                updBC('Archive', 'Asset_Ready');
-            };
-            img.src = ev.target.result;
-        };
-        reader.readAsDataURL(e.target.files[0]);
-    };
-
-    // BRANDING
-    document.getElementById('logoUp').onchange = (e) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => { brandLogo = img; alert("Identity Synchronized."); };
-            img.src = ev.target.result;
-        };
-        reader.readAsDataURL(e.target.files[0]);
-    };
-
-    function applyLogo() {
-        if(!activeImg || !brandLogo) return alert("Upload logo first.");
-        const s = canvas.width * 0.15;
-        ctx.globalAlpha = 0.6; ctx.drawImage(brandLogo, canvas.width - s - 40, canvas.height - s - 40, s, s); ctx.globalAlpha = 1;
+                ctx.drawImage(img,0,0); document.getElementById('dropzone').style.display = 'none';
+                document.getElementById('canvasWrap').classList.remove('hidden');
+            }; img.src = ev.target.result;
+        }; r.readAsDataURL(e.target.files[0]);
     }
 
-    // AI FX ENGINE
     async function runBgRemove() {
-        if(!activeImg) return; setL(true, "Neural Decoupling...");
-        const blob = await imglyRemoveBackground(activeImg);
-        const img = new Image(); 
-        img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); setL(false); };
-        img.src = URL.createObjectURL(blob);
+        if(!activeImg) return;
+        document.getElementById('loader').style.display = 'block';
+        try {
+            const blob = await imglyRemoveBackground(activeImg);
+            const img = new Image(); img.onload = () => { 
+                ctx.clearRect(0,0,canvas.width,canvas.height); 
+                ctx.drawImage(img,0,0); 
+                document.getElementById('loader').style.display = 'none'; 
+            };
+            img.src = URL.createObjectURL(blob);
+        } catch(e) { document.getElementById('loader').style.display = 'none'; alert("Error: Use a smaller image."); }
     }
 
-    function toggleEraser() { isEraser = !isEraser; document.getElementById('eBtn').style.color = isEraser ? '#D4AF37' : ''; }
-    function getP(e) {
-        const r = canvas.getBoundingClientRect();
-        const cx = e.touches ? e.touches[0].clientX : e.clientX;
-        const cy = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: (cx-r.left)*(canvas.width/r.width), y: (cy-r.top)*(canvas.height/r.height) };
-    }
-    canvas.onmousedown = () => { if(isEraser) isDrawing = true; };
-    canvas.onmouseup = () => isDrawing = false;
-    canvas.onmousemove = (e) => {
-        if(!isDrawing) return; const {x,y} = getP(e);
-        ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(x,y,30,0,7); ctx.fill();
-    };
-
-    function runFX(t) {
-        setL(true, "Neural Adjustment");
-        setTimeout(() => {
-            if(t==='iron') canvas.style.filter = 'contrast(1.02) blur(0.3px)';
-            if(t==='recolor') canvas.style.filter = 'hue-rotate(90deg)';
-            if(t==='beauty') canvas.style.filter = 'saturate(1.2) brightness(1.1)';
-            if(t==='ghost') canvas.style.filter = 'contrast(1.1)';
-            setL(false);
-        }, 1000);
+    function generateFreeAI(type) {
+        const p = prompt(`Describe ${type}:`);
+        if(!p) return;
+        document.getElementById('loader').style.display = 'block';
+        const img = new Image(); img.crossOrigin = "anonymous";
+        img.onload = () => {
+            activeImg = img; canvas.width = img.width; canvas.height = img.height;
+            ctx.drawImage(img,0,0); document.getElementById('dropzone').style.display = 'none';
+            document.getElementById('canvasWrap').classList.remove('hidden');
+            document.getElementById('loader').style.display = 'none';
+        };
+        img.src = `https://source.unsplash.com/featured/1200x1200?${encodeURIComponent(p)}`;
     }
 
-    function applyShadow() { canvas.style.filter += ' drop-shadow(0 30px 40px #000)'; }
-    function neuralSim(n, c) { updBC(c, n); document.getElementById('mName').innerText = n; document.getElementById('modal').style.display = 'flex'; }
-    function closeMod() { document.getElementById('modal').style.display = 'none'; }
-    function setL(s, m) { document.getElementById('lMsg').innerText = m; document.getElementById('loader').classList.toggle('active', s); }
-    function downAsset() { const a = document.createElement('a'); a.download='titan_render.png'; a.href=canvas.toDataURL(); a.click(); }
+    function addText() {
+        const txt = prompt("Enter text:");
+        if(!txt) return;
+        ctx.font = "bold 80px Inter";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.fillText(txt, canvas.width/2, canvas.height/2);
+    }
 
-    // INIT
+    function applyFX(t) {
+        if(!activeImg) return;
+        if(t==='iron') canvas.style.filter = 'contrast(1.05) brightness(1.05)';
+        if(t==='beauty') canvas.style.filter = 'saturate(1.2) brightness(1.1)';
+        if(t==='ghost') canvas.style.filter = 'contrast(1.2) drop-shadow(0 20px 40px rgba(0,0,0,0.4))';
+    }
+
+    function updateF() {
+        const b = document.getElementById('br').value, c = document.getElementById('co').value, s = document.getElementById('sa').value;
+        document.getElementById('bV').innerText = b; document.getElementById('cV').innerText = c; document.getElementById('sV').innerText = s;
+        canvas.style.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
+    }
+
+    function applyShadow() { canvas.style.filter += ' drop-shadow(0 40px 60px rgba(0,0,0,0.5))'; }
+    function loadBrandLogo(e) { const r = new FileReader(); r.onload = (ev) => { const img = new Image(); img.onload = () => brandLogo = img; img.src = ev.target.result; }; r.readAsDataURL(e.target.files[0]); }
+    function applyWatermark() { if(!brandLogo) return alert("Import logo first."); const s = canvas.width * 0.15; ctx.globalAlpha = 0.5; ctx.drawImage(brandLogo, canvas.width-s-40, canvas.height-s-40, s, s); ctx.globalAlpha = 1; }
+    function downAsset() { const a = document.createElement('a'); a.download='titan_phoenix_render.png'; a.href=canvas.toDataURL(); a.click(); }
+
     window.onload = () => {
-        let v = parseInt(localStorage.getItem('vbc_v') || 0) + 1;
-        localStorage.setItem('vbc_v', v);
-        if(localStorage.getItem('auth_titan')==='true') {
-            document.getElementById('licenseGate').style.display = 'none';
-            checkTOS();
+        const auth = localStorage.getItem('vbc_v12'), start = localStorage.getItem('vbc_v12_start');
+        if(auth === 'master') { document.getElementById('licenseGate').style.display = 'none'; document.getElementById('mainApp').style.display = 'grid'; }
+        else if(auth === 'trial' && start) {
+            const passed = (new Date().getTime() - start) / (1000 * 60 * 60 * 24);
+            if(passed > 7) { localStorage.clear(); localStorage.setItem('vbc_v12_exp', 'true'); location.reload(); }
+            else { document.getElementById('licenseGate').style.display = 'none'; document.getElementById('mainApp').style.display = 'grid'; }
         }
     };
 </script>
 </body>
-
 </html>
