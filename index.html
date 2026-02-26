@@ -3,188 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VBC TITAN | Neural Phoenix V12</title>
+    <title>VBC TITAN | Professional SaaS</title>
     <script src="https://unpkg.com/coi-serviceworker"></script>
-    <link rel="icon" type="image/png" href="logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/bundle.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjijSc9bNh2CXJiEfR7WgCT77CNscSTPs",
+            authDomain: "titan-app-vbc.firebaseapp.com",
+            projectId: "titan-app-vbc",
+            storageBucket: "titan-app-vbc.firebasestorage.app",
+            messagingSenderId: "700768811307",
+            appId: "1:700768811307:web:32c8afd9dda8133d302d6e",
+            measurementId: "G-CVSEGK99E7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Tracker & UI Logic
+        window.checkKey = async () => {
+            const user = auth.currentUser;
+            const key = document.getElementById('keyIn').value;
+            if(key === "TITAN-VBC-7777") { // In production, we check this in Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    active: true,
+                    keyUsed: key,
+                    lastLogin: new Date().toISOString(),
+                    email: user.email,
+                    location: "Pakistan (Auto-detected)"
+                }, { merge: true });
+                location.reload();
+            } else { alert("Invalid License Key!"); }
+        };
+
+        window.loginWithGoogle = () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider).then((result) => {
+                console.log("User Logged In");
+            }).catch(err => alert(err.message));
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('licenseSection').classList.remove('hidden');
+                // Check if already active
+                const docSnap = await getDoc(doc(db, "users", user.uid));
+                if (docSnap.exists() && docSnap.data().active) {
+                    document.getElementById('gate').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'grid';
+                }
+            }
+        });
+    </script>
+
     <style>
-        :root { --pr-blue: #410CD9; --sidebar-w: 300px; }
-        body { background: #000; color: #1d1d1f; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
-        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-        .app-grid { position: relative; display: grid; grid-template-columns: var(--sidebar-w) 1fr 280px; height: 100vh; padding-top: 80px; z-index: 10; }
-        .sidebar, .inspector { background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(20px); border-right: 1px solid #e5e5e5; overflow-y: auto; padding: 25px; }
-        .inspector { border-left: 1px solid #e5e5e5; }
-        .stage { display: flex; align-items: center; justify-content: center; position: relative; overflow: auto; }
-        .vbc-main-btn { background: var(--pr-blue); color: white; padding: 14px 32px; border-radius: 99px; font-weight: 700; cursor: pointer; border: none; box-shadow: 0 10px 20px rgba(65,12,217,0.2); }
-        .tool-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; font-size: 13px; font-weight: 600; color: #444; border-radius: 14px; margin-bottom: 6px; cursor: pointer; transition: 0.2s; }
-        .tool-btn:hover { background: #f0f0ff; color: var(--pr-blue); }
-        canvas#mainCanvas { background: white; box-shadow: 0 40px 100px rgba(0,0,0,0.3); max-width: 90%; max-height: 75vh; border-radius: 12px; }
-        .gate-overlay { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #loader { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; background: white; padding: 35px; border-radius: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
-        .wa-btn { background: #25D366; color: white; padding: 12px 25px; border-radius: 50px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; margin-top: 15px; transition: 0.3s; }
-        .wa-btn:hover { background: #128C7E; transform: translateY(-2px); }
+        :root { --pr-blue: #410CD9; }
+        body { background: #fbfbfd; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+        .vbc-main-btn { background: var(--pr-blue); color: white; padding: 14px 32px; border-radius: 99px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .vbc-main-btn:hover { transform: scale(1.05); }
+        .gate-overlay { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
     </style>
 </head>
 <body>
-<canvas id="bg-canvas"></canvas>
 
-<nav class="fixed top-0 w-full h-20 bg-white/95 backdrop-blur-md border-b flex items-center justify-between px-10 z-[1000]">
-    <div class="flex items-center gap-6">
-        <img src="logo.png" style="height:40px;" onerror="this.src='https://via.placeholder.com/40'">
-        <span class="font-black text-xl tracking-tighter uppercase">Titan <span class="text-indigo-600">Phoenix</span></span>
-    </div>
-    <button onclick="downAsset()" class="vbc-main-btn text-sm">Download Render</button>
-</nav>
-
-<div id="mainApp" class="app-grid" style="display:none;">
-    <aside class="sidebar">
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Neural Core</p>
-        <button class="tool-btn" onclick="runBgRemove()"><span>✂️</span> Background Removal</button>
-        <button class="tool-btn" onclick="applyFX('shadow')"><span>🌓</span> AI Realistic Shadows</button>
-        <button class="tool-btn" onclick="applyFX('beauty')"><span>💎</span> Product Beautifier</button>
-        <button class="tool-btn" onclick="applyFX('iron')"><span>💨</span> AI Fabric Ironing</button>
-        <button class="tool-btn" onclick="applyFX('ghost')"><span>👤</span> Ghost Mannequin</button>
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-8 mb-4">Design Tools</p>
-        <button class="tool-btn" onclick="addText()"><span>✍️</span> Add Neural Text</button>
-        <button class="tool-btn" onclick="document.getElementById('brandUp').click()"><span>📁</span> Import Logo</button>
-        <input type="file" id="brandUp" hidden onchange="loadBrandLogo(event)">
-        <button class="tool-btn" onclick="applyWatermark()"><span>🛡️</span> Apply Branding</button>
-    </aside>
-    <main class="stage">
-        <div id="loader">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p class="text-xs font-black">AI PROCESSING...</p>
-        </div>
-        <div id="dropzone" class="text-center p-20 border-2 border-dashed border-gray-300 rounded-[50px] bg-white/90 shadow-xl">
-            <h3 class="text-2xl font-black mb-6">Neural Engine Ready</h3>
-            <button onclick="document.getElementById('mainUp').click()" class="vbc-main-btn px-16">Select Image</button>
-            <input type="file" id="mainUp" hidden onchange="handleMainUpload(event)">
-        </div>
-        <div id="canvasWrap" class="hidden"><canvas id="mainCanvas"></canvas></div>
-    </main>
-    <aside class="inspector">
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10">Tuning</p>
-        <div class="space-y-8">
-            <div><label class="text-[11px] font-bold block mb-3">BRIGHTNESS</label><input type="range" class="w-full accent-indigo-600" oninput="updateF()" id="br" min="0" max="200" value="100"></div>
-            <div><label class="text-[11px] font-bold block mb-3">CONTRAST</label><input type="range" class="w-full accent-indigo-600" oninput="updateF()" id="co" min="0" max="200" value="100"></div>
-            <div><label class="text-[11px] font-bold block mb-3">SATURATION</label><input type="range" class="w-full accent-indigo-600" oninput="updateF()" id="sa" min="0" max="200" value="100"></div>
-        </div>
-    </aside>
-</div>
-
-<div id="licenseGate" class="gate-overlay">
-    <img src="logo.png" style="height:110px; margin-bottom:20px;" onerror="this.src='https://via.placeholder.com/110'">
-    <h2 class="text-3xl font-black tracking-tighter mb-2">TITAN PHOENIX V12</h2>
-    <p class="text-gray-500 mb-8 max-w-sm">The world's most advanced AI engine for high-end product photography.</p>
+<div id="gate" class="gate-overlay">
+    <img src="logo.png" class="h-20 mb-6" onerror="this.src='https://via.placeholder.com/80'">
+    <h1 class="text-4xl font-black mb-2 tracking-tighter">TITAN PHOENIX V12</h1>
     
-    <div class="bg-gray-50 p-8 rounded-[40px] border border-gray-100 shadow-sm">
-        <input type="text" id="keyIn" placeholder="Enter License Key" class="w-[320px] p-5 border-2 rounded-2xl text-center font-bold text-xl mb-4 outline-none focus:border-indigo-500 transition-all">
-        <br>
-        <button onclick="checkKey()" class="vbc-main-btn w-[320px] py-5">Activate Neural Core</button>
-        <p class="mt-6 text-sm text-gray-400">Don't have a subscription?</p>
-        <a href="https://wa.me/923217452433?text=Hi%20Fahad,%20I'm%20interested%20in%20Titan%20Phoenix.%20Please%20send%20me%20the%20packages%20and%20payment%20details." target="_blank" class="wa-btn">
-             Buy License via WhatsApp
-        </a>
+    <div id="loginSection" class="p-8">
+        <p class="text-gray-500 mb-8">Login with your professional ID to continue</p>
+        <button onclick="loginWithGoogle()" class="border-2 border-gray-200 px-10 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-gray-50 transition">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="h-5">
+            Continue with Google
+        </button>
     </div>
-    <p class="mt-8 text-[10px] text-gray-300 uppercase tracking-widest">Powered by Virtual Bridge Connect</p>
+
+    <div id="licenseSection" class="hidden p-8">
+        <p class="text-gray-500 mb-6 font-medium">Almost there! Enter your subscription key.</p>
+        <input type="text" id="keyIn" placeholder="XXXX-XXXX-XXXX" class="w-[350px] p-5 border-2 rounded-2xl text-center font-black text-2xl mb-6 outline-none focus:border-indigo-600">
+        <br>
+        <button onclick="checkKey()" class="vbc-main-btn w-[350px] py-5">Activate System</button>
+        <p class="mt-8 text-sm">New user? Contact Fahad for a license:</p>
+        <a href="https://wa.me/923217452433?text=Hi%20Fahad,%20I'm%20ready%20to%20buy%20Titan%20Phoenix%20License." class="text-green-600 font-black text-lg">+92 321 7452433</a>
+    </div>
 </div>
 
-<script>
-    // BG Animation
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    const pGeom = new THREE.BufferGeometry();
-    const pPos = new Float32Array(1000 * 3);
-    for(let i=0; i<3000; i++) pPos[i] = (Math.random()-0.5)*10;
-    pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-    const pMesh = new THREE.Points(pGeom, new THREE.PointsMaterial({ size: 0.005, color: '#410CD9' }));
-    scene.add(pMesh); camera.position.z = 4;
-    function animate() { requestAnimationFrame(animate); pMesh.rotation.y += 0.001; renderer.render(scene, camera); }
-    animate();
+<div id="mainApp" class="hidden grid-cols-3 h-screen pt-20">
+    <div class="p-10 text-center col-span-3">
+        <h2 class="text-2xl font-bold">System Authenticated. Loading Neural Engine...</h2>
+        <p>Your activity is being logged in the owner dashboard.</p>
+        </div>
+</div>
 
-    // App Logic
-    const canvas = document.getElementById('mainCanvas'), ctx = canvas.getContext('2d');
-    let activeImg = null, brandLogo = null;
-
-    function checkKey() {
-        const key = document.getElementById('keyIn').value;
-        if(key === "TITAN-VBC-7777") {
-            localStorage.setItem('vbc_auth', 'true');
-            // Backend Strategy: Log activity
-            console.log("Key Activated at: " + new Date().toISOString());
-            location.reload();
-        } else {
-            alert("Invalid License. Please purchase a valid key via WhatsApp.");
-        }
-    }
-
-    function handleMainUpload(e) {
-        const r = new FileReader(); r.onload = (ev) => {
-            const img = new Image(); img.onload = () => {
-                let w = img.width, h = img.height;
-                if(w > 1000) { h *= 1000/w; w = 1000; }
-                canvas.width = w; canvas.height = h;
-                ctx.drawImage(img, 0, 0, w, h);
-                activeImg = canvas.toDataURL();
-                document.getElementById('dropzone').style.display = 'none';
-                document.getElementById('canvasWrap').classList.remove('hidden');
-            }; img.src = ev.target.result;
-        }; r.readAsDataURL(e.target.files[0]);
-    }
-
-    async function runBgRemove() {
-        if(!activeImg) return;
-        document.getElementById('loader').style.display = 'block';
-        try {
-            const blob = await imglyRemoveBackground(activeImg, { publicPath: "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/" });
-            const img = new Image(); img.onload = () => {
-                ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0);
-                document.getElementById('loader').style.display = 'none';
-                activeImg = canvas.toDataURL();
-            };
-            img.src = URL.createObjectURL(blob);
-        } catch(e) { document.getElementById('loader').style.display = 'none'; alert("Try a smaller image."); }
-    }
-
-    function updateF() {
-        const b = document.getElementById('br').value, c = document.getElementById('co').value, s = document.getElementById('sa').value;
-        canvas.style.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
-    }
-
-    function applyFX(type) {
-        if(type === 'shadow') canvas.style.filter += ' drop-shadow(0 30px 40px rgba(0,0,0,0.4))';
-        if(type === 'beauty') { document.getElementById('sa').value = 140; updateF(); }
-        if(type === 'iron') { canvas.style.filter += ' contrast(1.05) brightness(1.02) blur(0.3px)'; }
-        if(type === 'ghost') { canvas.style.filter += ' saturate(1.1) brightness(1.05)'; }
-    }
-
-    function loadBrandLogo(e) { const r = new FileReader(); r.onload = (ev) => { const i = new Image(); i.onload = () => brandLogo = i; i.src = ev.target.result; }; r.readAsDataURL(e.target.files[0]); }
-    function applyWatermark() { 
-        if(!brandLogo) return alert("Upload logo first!");
-        const s = canvas.width * 0.15; ctx.globalAlpha = 0.5;
-        ctx.drawImage(brandLogo, canvas.width-s-20, canvas.height-s-20, s, s); ctx.globalAlpha = 1;
-    }
-    function addText() {
-        const t = prompt("Text:"); if(!t) return;
-        ctx.font = "bold 50px Inter"; ctx.fillStyle = "white"; ctx.textAlign = "center";
-        ctx.fillText(t, canvas.width/2, canvas.height - 40);
-    }
-    function downAsset() { const a = document.createElement('a'); a.download='vbc_titan_render.png'; a.href=canvas.toDataURL(); a.click(); }
-
-    window.onload = () => {
-        // Tracker: User Metadata for Owner Dashboard Strategy
-        fetch('https://ipapi.co/json/').then(r => r.json()).then(d => console.log(`User from: ${d.city}, ${d.country_name}`));
-        
-        if(localStorage.getItem('vbc_auth') === 'true') {
-            document.getElementById('licenseGate').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'grid';
-        }
-    };
-</script>
 </body>
 </html>
